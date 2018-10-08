@@ -1,0 +1,18 @@
+## Interface: 11200
+## Title: |cff8000FFKTMod |cff7fff7fby |cffF5F54AAtreyyo
+## Author: Atreyyo
+## Version: 1.7
+## Notes: A Kel'Thuzad boss mod
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: KTMod_Settings
+
+libs\AceLibrary\AceLibrary.lua
+libs\AceOO-2.0\AceOO-2.0.lua
+libs\AceEvent-2.0\AceEvent-2.0.lua
+libs\AceAddon-2.0\AceAddon-2.0.lua
+
+libs\RosterLib-2.0\RosterLib-2.0.lua
+libs\HealComm-1.0\HealComm-1.0.lua
+
+KTMod.lua
