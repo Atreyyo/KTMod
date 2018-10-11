@@ -1,7 +1,7 @@
 ## Interface: 11200
 ## Title: |cff8000FFKTMod |cff7fff7fby |cffF5F54AAtreyyo
 ## Author: Atreyyo
-## Version: 1.7
+## Version: 1.71
 ## Notes: A Kel'Thuzad boss mod
 ## DefaultState: Enabled
 ## LoadOnDemand: 0

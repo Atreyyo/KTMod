@@ -17,7 +17,7 @@ if not AceLibrary:HasInstance("AceEvent-2.0") then error(MAJOR_VERSION .. " requ
 if not AceLibrary:HasInstance("AceHook-2.1") then error(MAJOR_VERSION .. " requires AceHook-2.1") end
 
 local roster = AceLibrary("RosterLib-2.0")
-local console = AceLibrary("AceConsole-2.0") --HCSpy
+--local console = AceLibrary("AceConsole-2.0") --HCSpy
 local HealComm = {}
 
 ------------------------------------------------

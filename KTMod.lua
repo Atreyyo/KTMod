@@ -97,6 +97,7 @@ KTMod.Default = {
 local KTModIsEnabled = false
 local KTModFightStarted = nil
 local HasKTMod = {}
+local KTModLastFrostBlast = nil
 -- end vars
 
 function KTMod:GetClassSpells(type)
@@ -148,7 +149,8 @@ function KTMod:FrostBlastCheck()
 		for i=1,GetNumRaidMembers() do
 			--if KTMod:GetBuff("raid"..i,"Rejuvenation") then
 			if KTMod:GetDebuff("raid"..i,"Frost Blast") then
-				if KTMod_Settings["Frost Blast"] == nil or (GetTime()-KTMod_Settings["Frost Blast"]) > KTMod_Settings["Frost Blast Timer"] then
+				if KTModLastFrostBlast == nil or (GetTime()-KTModLastFrostBlast) > KTMod_Settings["Frost Blast Timer"] then
+					KTModLastFrostBlast = GetTime()
 					KTMod_Settings["Frost Blast"] = GetTime()
 				end
 				if KTMod.FrostBlast.Table == nil then
@@ -231,14 +233,14 @@ function KTMod:OnEvent()
 		end
 	elseif event == "CHAT_MSG_MONSTER_YELL" then
 		if arg1 == "Minions, servants, soldiers of the cold dark, obey the call of Kel'Thuzad!" then
-			-- Kel'Thuzad encounter started
+			print("Kel'Thuzad encounter started!")
 			if not KTModIsEnabled then 
 				KTModIsEnabled = true
 			end
 			KTModFightStarted = GetTime()
 		end
 	elseif event == "MINIMAP_ZONE_CHANGED" then
-		if arg1 == "Kel'Thuzad Chamber" then
+		if GetMinimapZoneText() == "Kel'Thuzad Chamber" then
 			if not KTModIsEnabled then
 				KTModIsEnabled = true
 			end
@@ -261,7 +263,7 @@ function KTMod:OnEvent()
 		if arg1 == "KTMod" and string.find(arg2,"version") and UnitName("player") ~= arg4 then
 			local KTModv = string.sub(arg2,8,string.len(arg2))
 			HasKTMod[arg4] = KTModv
-		elseif arg1 == "KTMod" and string.find(arg2,"activate") then
+		elseif arg1 == "KTMod" and string.find(arg2,"activate") then -- /script SendAddonMessage("KTMod","activate","RAID")
 			KTModIsEnabled = true
 			KTMod.FrostBlast:Show()
 			KTMod.CoKT:Show()
@@ -420,7 +422,7 @@ function KTMod.FrostBlast:Update()
 		end
 		
 		-- Frost Blast Timer
-		if KTMod_Settings["Frost Blast"] ~= nil and not KTMod:RaidInCombat() then
+		if KTMod_Settings["Frost Blast"] ~= nil and KTMod:RaidInCombat() then
 			KTMod.FrostBlast.Frames["Frost Blast Timer"] = KTMod.FrostBlast.Frames["Frost Blast Timer"] or KTMod.FrostBlast:Timer()
 			local frame = KTMod.FrostBlast.Frames["Frost Blast Timer"]
 				local p = (30-(GetTime()-KTMod_Settings["Frost Blast"]))/30
@@ -1660,7 +1662,10 @@ function KTMod:Update()
 		end
 		if KTModFightStarted ~= nil and (GetTime()-KTModFightStarted) > 315 then
 			KTModFightStarted = nil
-			KTMod_Settings["Frost Blast"] = GetTime()
+			KTMod_Settings["Frost Blast"] = GetTime() -- /script KTMod_Settings["Frost Blast"] = GetTime()
+		end
+		if not KTMod:RaidInCombat() and KTMod_Settings["Frost Blast"] ~= nil then
+			KTMod_Settings["Frost Blast"] = nil
 		end
 	else
 	end
@@ -1670,6 +1675,7 @@ function KTMod:StopAllFunctions()
 	if KTMod.FrostBlast.Frames["Frost Blast Timer"] and KTMod.FrostBlast.Frames["Frost Blast Timer"]:IsVisible() then
 		KTMod.FrostBlast.Frames["Frost Blast Timer"]:Hide()
 		KTMod_Settings["Frost Blast"] = nil
+		KTModLastFrostBlast = nil
 	end
 	if KTMod.CoKT.Frames["Chains of Kel'Thuzad Timer"] and KTMod.CoKT.Frames["Chains of Kel'Thuzad Timer"]:IsVisible() then
 		KTMod.CoKT.Frames["Chains of Kel'Thuzad Timer"]:Hide()
@@ -1688,9 +1694,10 @@ end
 function KTMod:version()
 	local KTModv = ""
 	local i = 0
+	local count=0
 	if GetRaidRosterInfo(1) then
 		if HasKTMod ~= nil then
-			DEFAULT_CHAT_FRAME:AddMessage("|cFF8000FF KTMod:|r version check")
+			DEFAULT_CHAT_FRAME:AddMessage("--[ |cFF8000FF KTMod "..KTMod_Settings["version"].."|r version check")
 			for n,v in pairs(HasKTMod) do
 				if KTMod:InRaidCheck(n) then
 					KTModv = KTModv.."|cff"..KTMod:GetFFClassColors(n)..n.."|r v"..v..", "
@@ -1700,11 +1707,14 @@ function KTMod:version()
 						KTModv = ""
 						i=0
 					end
+					count=count+1
 				end
 			end
 			if KTModv ~= "" and KTModv ~= nil then
 				DEFAULT_CHAT_FRAME:AddMessage(KTModv)
+				
 			end
+			DEFAULT_CHAT_FRAME:AddMessage("--[ Total ["..count.."/"..GetNumRaidMembers().."] has KTMod.")
 		else
 			DEFAULT_CHAT_FRAME:AddMessage("|cFF8000FF KTMod:|r no players have KTMod.")
 		end
